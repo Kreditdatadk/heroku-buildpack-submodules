@@ -6,23 +6,26 @@ require 'parseconfig'
 config = ParseConfig.new("#{ENV['BUILD_DIR']}/.gitmodules")
 
 config.get_params.each do |param|
-  puts "-----> Args"
-  ARGV.each do |a|
-    puts "Argument: #{a}"
-  end
   next unless param.match(/^submodule/)
   c = config[param]
+
+  github_token = nil
+  begin
+    github_token = File.read("#{ENV['BUILD_DIR']}/GITHUB_TOKEN").to_s
+  rescue
+    # Intentionally blank
+  end
 
   puts "-----> Installing submodule #{c["path"]} #{c["branch"]}"
   branch_flag = c["branch"] ? "-b #{c['branch']}" : ""
   build_path = "#{ENV['BUILD_DIR']}/#{c["path"]}"
-  if ENV['GITHUB_TOKEN'].nil?
+  if github_token.nil?
     puts "-----> No GITHUB_TOKEN found, trying regular access"
     `git clone -q --single-branch #{c["url"]} #{branch_flag} #{build_path}`
   else
     fake_url = c["url"].gsub('git@github.com:', "https://{{GITHUB_TOKEN}}:x-oauth-basic@github.com/")
     puts "-----> GITHUB_TOKEN found, adjusting target URL to #{fake_url}"
-    url = c["url"].gsub('git@github.com:', "https://#{ENV['GITHUB_TOKEN']}:x-oauth-basic@github.com/")
+    url = c["url"].gsub('git@github.com:', "https://#{github_token}:x-oauth-basic@github.com/")
     `git clone -q --single-branch #{url} #{branch_flag} #{build_path}`
   end
   if c.key?("revision")
