@@ -13,8 +13,11 @@ config.get_params.each do |param|
   branch_flag = c["branch"] ? "-b #{c['branch']}" : ""
   build_path = "#{ENV['BUILD_DIR']}/#{c["path"]}"
   if ENV['GITHUB_TOKEN'].nil?
+    puts "-----> No GITHUB_TOKEN found, trying regular access"
     `git clone -q --single-branch #{c["url"]} #{branch_flag} #{build_path}`
   else
+    fake_url = c["url"].gsub('git@github.com:', "https://{{GITHUB_TOKEN}}:x-oauth-basic@github.com/")
+    puts "-----> GITHUB_TOKEN found, adjusting target URL to #{fake_url}"
     url = c["url"].gsub('git@github.com:', "https://#{ENV['GITHUB_TOKEN']}:x-oauth-basic@github.com/")
     `git clone -q --single-branch #{url} #{branch_flag} #{build_path}`
   end
