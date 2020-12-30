@@ -5,6 +5,10 @@ require 'parseconfig'
 
 config = ParseConfig.new("#{ENV['BUILD_DIR']}/.gitmodules")
 
+ARGV.each do |a|
+  puts "Argument: #{a}"
+end
+
 config.get_params.each do |param|
   next unless param.match(/^submodule/)
   c = config[param]
