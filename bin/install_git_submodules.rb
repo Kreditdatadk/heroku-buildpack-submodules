@@ -9,13 +9,7 @@ config.get_params.each do |param|
   next unless param.match(/^submodule/)
   c = config[param]
 
-  github_token = nil
-  begin
-    github_token = File.read("#{ENV['BUILD_DIR']}/GITHUB_TOKEN").to_s
-  rescue
-    # Intentionally blank
-  end
-
+  github_token = ENV['GITHUB_TOKEN']
   puts "-----> Installing submodule #{c["path"]} #{c["branch"]}"
   branch_flag = c["branch"] ? "-b #{c['branch']}" : ""
   build_path = "#{ENV['BUILD_DIR']}/#{c["path"]}"
